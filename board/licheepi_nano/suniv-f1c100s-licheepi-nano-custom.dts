@@ -11,6 +11,45 @@
 	model = "Lichee Pi Nano (Custom)";
 };
 
+&usb_otg {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&usbphy {
+	/delete-property/ usb0_id_det-gpio;
+	status = "okay";
+};
+
+&pio {
+	uart2_pd_pins: uart2-pd-pins {
+		pins = "PD13", "PD14";
+		function = "uart2";
+	};
+
+	/* PD13/PD14 are reserved for UART2 rather than LCD_D19/D20. */
+	lcd_rgb666_without_uart2_pins: lcd-rgb666-without-uart2-pins {
+		pins = "PD0", "PD1", "PD2", "PD3", "PD4", "PD5", "PD6",
+		       "PD7", "PD8", "PD9", "PD10", "PD11", "PD12", "PD15",
+		       "PD16", "PD17", "PD18", "PD19", "PD20", "PD21";
+		function = "lcd";
+	};
+};
+
+&uart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart2_pd_pins>;
+	status = "okay";
+};
+
+&{/aliases} {
+	serial2 = &uart2;
+};
+
+&tcon0 {
+	pinctrl-0 = <&lcd_rgb666_without_uart2_pins>;
+};
+
 /*
 &panel {
 	// override default resolution (800x480) with smaller resolution: 480x272

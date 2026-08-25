@@ -73,6 +73,7 @@ COPY --from=sdk /root/buildroot/output/images/arm-buildroot-linux-gnueabi_sdk-bu
 WORKDIR /root/licheepi-nano
 COPY board/ board/
 COPY configs/ configs/
+COPY package/ package/
 COPY \
     Config.in \
     external.desc \

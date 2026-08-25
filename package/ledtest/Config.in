@@ -1,0 +1,4 @@
+config BR2_PACKAGE_LEDTEST
+	bool "ledtest"
+	help
+	  Small userspace TCA9535 LED exercise utility for the board's 4x4 LED display.

@@ -11,6 +11,7 @@ FROM $BASE_IMAGE:$BASE_VERSION AS local
 WORKDIR /root/licheepi-nano
 COPY board/ board/
 COPY configs/ configs/
+COPY package/ package/
 COPY \
     Config.in \
     external.desc \
@@ -22,7 +23,7 @@ WORKDIR /root/buildroot
 RUN BR2_EXTERNAL=/root/licheepi-nano make licheepi_nano_defconfig
 RUN cd output/build/uboot-v2021.01-f1c100s-4/ && rm .stamp_built .stamp_*installed
 RUN cd output/build/host-uboot-tools-2021.07/ && rm .stamp_built .stamp_*installed
-RUN cd output/build/linux-custom/ && rm .stamp_dotconfig .stamp_configured .stamp_built .stamp_*installed
+RUN cd output/build/linux-custom/ && rm .stamp_patched .stamp_dotconfig .stamp_configured .stamp_built .stamp_*installed
 RUN cd output/build/linux-firmware-20221214/ && rm .stamp_built .stamp_*installed
 
 # re-run build
