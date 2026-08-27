@@ -54,6 +54,7 @@ BR2_PACKAGE_EVTEST=y
 BR2_PACKAGE_LIBGPIOD=y
 BR2_PACKAGE_LIBGPIOD_TOOLS=y
 BR2_PACKAGE_LEDTEST=y
+BR2_PACKAGE_FBSET=y
 
 # Supported target-side development tools. Buildroot 2023.02 has no native
 # GCC/G++ target package; see README for the required architectural change.
