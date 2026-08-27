@@ -1,0 +1,36 @@
+#!/bin/sh
+
+TIME_SERVER=time.nist.gov
+MAX_ATTEMPTS=3
+
+sync_time()
+{
+	attempt=1
+	while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
+		if rdate -s "$TIME_SERVER"; then
+			echo "System time synchronized from $TIME_SERVER"
+			return 0
+		fi
+		echo "Time synchronization attempt $attempt failed; retrying" >&2
+		attempt=$((attempt + 1))
+		[ "$attempt" -le "$MAX_ATTEMPTS" ] && sleep 1
+	done
+
+	# Time sync is helpful but must not make the system unbootable.
+	echo "Time synchronization unavailable; continuing boot" >&2
+	return 0
+}
+
+case "$1" in
+	start|restart)
+		sync_time
+		;;
+	stop)
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}" >&2
+		exit 2
+		;;
+esac
+
+exit 0

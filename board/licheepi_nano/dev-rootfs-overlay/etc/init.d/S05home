@@ -1,0 +1,48 @@
+#!/bin/sh
+
+VICTORIA_UID=1000
+VICTORIA_GID=1000
+VICTORIA_HOME=/home/victoria
+
+home_is_mounted()
+{
+	[ "$(findmnt -rn -o TARGET -T /home 2>/dev/null)" = /home ]
+}
+
+ensure_home()
+{
+	if ! home_is_mounted; then
+		echo "Mounting HOME on /home" >&2
+		if ! mount /home; then
+			echo "HOME is unavailable; continuing without /home" >&2
+			return 1
+		fi
+	fi
+
+	if ! home_is_mounted; then
+		echo "HOME mount did not appear on /home; continuing without it" >&2
+		return 1
+	fi
+
+	# Only reach the account setup after the persistent HOME filesystem mounted.
+	mkdir -p "$VICTORIA_HOME"
+	# Do not recurse: existing files and directories in HOME are preserved.
+	chown "$VICTORIA_UID:$VICTORIA_GID" "$VICTORIA_HOME"
+	chmod 0755 "$VICTORIA_HOME"
+}
+
+case "$1" in
+	start)
+		ensure_home
+		status=$?
+		[ "$status" -eq 0 ] || exit "$status"
+		;;
+	stop|restart)
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}" >&2
+		exit 2
+		;;
+esac
+
+exit 0

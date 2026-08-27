@@ -1,0 +1,14 @@
+# Buildroot 2023.02's normal SysV skeleton fstab. Keep these pseudo-filesystem
+# entries: /etc/inittab mounts /proc early, and mount -a supplies the rest.
+# <file system>  <mount pt>  <type>  <options>  <dump>  <pass>
+/dev/root        /            ext2    rw,noauto  0       1
+proc             /proc        proc    defaults   0       0
+devpts           /dev/pts     devpts  defaults,gid=5,mode=620,ptmxmode=0666  0  0
+tmpfs            /dev/shm     tmpfs   mode=0777  0       0
+tmpfs            /tmp         tmpfs   mode=1777  0       0
+tmpfs            /run         tmpfs   mode=0755,nosuid,nodev  0  0
+sysfs            /sys         sysfs   defaults   0       0
+
+# The provisioning workflow creates this filesystem with label HOME. nofail
+# keeps a seed-image boot usable before the 64 GB card is provisioned.
+LABEL=HOME        /home        ext4    defaults,nofail  0  2

@@ -1,0 +1,2 @@
+# Full administrative access for the local development account.
+victoria ALL=(ALL:ALL) ALL

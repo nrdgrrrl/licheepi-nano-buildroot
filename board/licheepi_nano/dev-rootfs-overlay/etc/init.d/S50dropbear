@@ -1,0 +1,163 @@
+#!/bin/sh
+
+DROPBEAR=/home/victoria/.local/sbin/dropbear
+HOST_KEY=/home/victoria/.local/etc/dropbear/dropbear_ed25519_host_key
+PIDFILE=/run/dropbear.pid
+
+home_is_mounted()
+{
+	[ "$(findmnt -rn -o TARGET -T /home 2>/dev/null)" = /home ]
+}
+
+pid_is_dropbear()
+{
+	case " $(pidof dropbear 2>/dev/null) " in
+		*" $1 "*) return 0 ;;
+		*) return 1 ;;
+	esac
+}
+
+running_pid()
+{
+	pid=""
+	if [ -r "$PIDFILE" ]; then
+		read -r pid < "$PIDFILE"
+		case "$pid" in
+			''|*[!0-9]*) pid="" ;;
+			esac
+		if [ -n "$pid" ] && pid_is_dropbear "$pid"; then
+			echo "$pid"
+			return 0
+		fi
+	fi
+
+	# Also recognize a manually started Dropbear so startup cannot duplicate it.
+	for pid in $(pidof dropbear 2>/dev/null || true); do
+		echo "$pid"
+		return 0
+	done
+	return 1
+}
+
+pidfile_pid()
+{
+	pid=""
+	if [ -r "$PIDFILE" ]; then
+		read -r pid < "$PIDFILE"
+		case "$pid" in
+			''|*[!0-9]*) return 1 ;;
+		esac
+		echo "$pid"
+		return 0
+	fi
+	return 1
+}
+
+pidfile_process_alive()
+{
+	pid=$(pidfile_pid || true)
+	[ -n "$pid" ] || return 1
+	kill -0 "$pid" 2>/dev/null || return 1
+	pid_is_dropbear "$pid"
+}
+
+start_dropbear()
+{
+	pid=$(running_pid || true)
+	if [ -n "$pid" ]; then
+		printf '%s\n' "$pid" > "$PIDFILE"
+		echo "Dropbear already running (pid $pid)"
+		return 0
+	fi
+
+	if ! home_is_mounted; then
+		echo "Dropbear not started: /home is not mounted" >&2
+		return 1
+	fi
+	if [ ! -x "$DROPBEAR" ]; then
+		echo "Dropbear not started: missing executable $DROPBEAR" >&2
+		return 1
+	fi
+	if [ ! -r "$HOST_KEY" ]; then
+		echo "Dropbear not started: missing host key $HOST_KEY" >&2
+		return 1
+	fi
+
+	rm -f "$PIDFILE"
+	echo "Starting Dropbear on port 22"
+	"$DROPBEAR" \
+		-w \
+		-p 22 \
+		-P "$PIDFILE" \
+		-r "$HOST_KEY" &
+	launcher_pid=$!
+
+	# Dropbear daemonizes by default and writes its pidfile shortly after start.
+	# Require both a valid pidfile and a live Dropbear process before succeeding.
+	attempt=1
+	while [ "$attempt" -le 10 ]; do
+		if pidfile_process_alive; then
+			pid=$(pidfile_pid)
+			echo "Dropbear ready (pid $pid)"
+			return 0
+		fi
+		sleep 0.1
+		attempt=$((attempt + 1))
+	done
+
+	echo "Dropbear failed to start; continuing boot" >&2
+	if kill -0 "$launcher_pid" 2>/dev/null; then
+		kill "$launcher_pid" 2>/dev/null || true
+		wait "$launcher_pid" 2>/dev/null || true
+	fi
+	rm -f "$PIDFILE"
+	return 1
+}
+
+stop_dropbear()
+{
+	pid=$(running_pid || true)
+	if [ -z "$pid" ]; then
+		rm -f "$PIDFILE"
+		echo "Dropbear is not running"
+		return 0
+	fi
+
+	echo "Stopping Dropbear (pid $pid)"
+	kill "$pid" 2>/dev/null || true
+	attempt=1
+	while pid_is_dropbear "$pid"; do
+		if [ "$attempt" -ge 10 ]; then
+			echo "Dropbear did not stop after 1 second" >&2
+			return 1
+		fi
+		sleep 0.1
+		attempt=$((attempt + 1))
+	done
+	rm -f "$PIDFILE"
+	return 0
+}
+
+status=0
+case "$1" in
+	start)
+		start_dropbear || status=$?
+		;;
+	stop)
+		stop_dropbear || status=$?
+		;;
+	restart)
+		stop_dropbear
+		status=$?
+		if [ "$status" -eq 0 ]; then
+			start_dropbear
+			status=$?
+		fi
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}" >&2
+		exit 2
+		;;
+esac
+
+exit "$status"

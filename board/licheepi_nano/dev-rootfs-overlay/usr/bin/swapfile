@@ -1,0 +1,52 @@
+#!/bin/sh
+
+set -eu
+
+SWAPFILE=/swapfile
+DEFAULT_SIZE_MIB=512
+
+usage()
+{
+	echo "Usage: $0 create [size_mib] | enable | disable | status" >&2
+	exit 2
+}
+
+[ "$#" -ge 1 ] || usage
+
+case "$1" in
+	create)
+		[ "$#" -le 2 ] || usage
+		size_mib=${2:-$DEFAULT_SIZE_MIB}
+		case "$size_mib" in
+			''|*[!0-9]*)
+				echo "size_mib must be a positive integer" >&2
+				exit 2
+				;;
+		esac
+		[ "$size_mib" -gt 0 ] || usage
+		if [ -e "$SWAPFILE" ]; then
+			echo "$SWAPFILE already exists; refusing to overwrite it" >&2
+			exit 1
+		fi
+		echo "Creating ${size_mib} MiB $SWAPFILE"
+		dd if=/dev/zero of="$SWAPFILE" bs=1M count="$size_mib"
+		chmod 600 "$SWAPFILE"
+		mkswap "$SWAPFILE"
+		echo "Created $SWAPFILE; enable it with: $0 enable"
+		;;
+	enable)
+		[ "$#" -eq 1 ] || usage
+		swapon "$SWAPFILE"
+		;;
+	disable)
+		[ "$#" -eq 1 ] || usage
+		swapoff "$SWAPFILE"
+		;;
+	status)
+		[ "$#" -eq 1 ] || usage
+		cat /proc/swaps
+		;;
+	*)
+		usage
+		;;
+esac

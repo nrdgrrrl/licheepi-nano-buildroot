@@ -1,0 +1,2 @@
+# username uid group gid password home shell groups comment
+victoria 1000 victoria 1000 * /home/victoria /bin/bash - Linux Business Card development user

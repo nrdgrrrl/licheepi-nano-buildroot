@@ -1,0 +1,26 @@
+# Development image build using the existing cached Buildroot/SDK image.
+
+ARG BASE_IMAGE=unframework/licheepi-nano-buildroot
+ARG BASE_VERSION=latest
+
+FROM $BASE_IMAGE:$BASE_VERSION AS dev
+
+WORKDIR /root/licheepi-nano
+COPY board/ board/
+COPY configs/ configs/
+COPY package/ package/
+COPY Config.in external.desc external.mk ./
+
+WORKDIR /root/buildroot
+RUN BR2_EXTERNAL=/root/licheepi-nano make licheepi_nano_dev_defconfig
+
+# Reapply board-side kernel/U-Boot/DTS changes from the local checkout.
+RUN cd output/build/uboot-v2021.01-f1c100s-4/ && rm -f .stamp_built .stamp_*installed
+RUN cd output/build/host-uboot-tools-2021.07/ && rm -f .stamp_built .stamp_*installed
+RUN cd output/build/linux-custom/ && rm -f .stamp_patched .stamp_dotconfig .stamp_configured .stamp_built .stamp_*installed
+RUN cd output/build/linux-firmware-20221214/ && rm -f .stamp_built .stamp_*installed
+
+RUN make
+
+FROM scratch AS devout
+COPY --from=dev /root/buildroot/output/images/sdcard-dev.img /

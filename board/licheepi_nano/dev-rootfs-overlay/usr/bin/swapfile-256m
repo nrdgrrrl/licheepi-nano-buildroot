@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Compatibility name retained from the first development image. The default
+# is now 512 MiB; an explicit size can be supplied to create a different size.
+exec /usr/bin/swapfile "$@"
