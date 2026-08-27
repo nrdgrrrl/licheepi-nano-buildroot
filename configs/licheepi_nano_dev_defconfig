@@ -91,16 +91,15 @@ BR2_PACKAGE_GAWK=y
 # `passwd victoria` on the handheld; no repository password is embedded.
 BR2_ROOTFS_USERS_TABLES="$(BR2_EXTERNAL_LICHEEPI_NANO_PATH)/board/licheepi_nano/dev-users-table.txt"
 
-# Linux kernel customized for the board
+# Upstream Linux kernel for the board
 BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_TARBALL=y
-BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="https://github.com/unframework/linux/archive/v5.11-nano-4/v5.11-nano-4.tar.gz"
-BR2_LINUX_KERNEL_VERSION="v5.11-nano-4"
+BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.18.47.tar.xz"
+BR2_LINUX_KERNEL_VERSION="6.18.47"
 BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG=y
 BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_LICHEEPI_NANO_PATH)/board/licheepi_nano/licheepi_nano_linux_defconfig"
 BR2_LINUX_KERNEL_DTS_SUPPORT=y
 BR2_LINUX_KERNEL_CUSTOM_DTS_PATH="$(BR2_EXTERNAL_LICHEEPI_NANO_PATH)/board/licheepi_nano/suniv-f1c100s-licheepi-nano-custom.dts"
-BR2_GLOBAL_PATCH_DIR="$(BR2_EXTERNAL_LICHEEPI_NANO_PATH)/board/licheepi_nano/patches"
 
 # Development root filesystem: approximately 1 GiB; normal image is 512M.
 BR2_TARGET_ROOTFS_EXT2=y
