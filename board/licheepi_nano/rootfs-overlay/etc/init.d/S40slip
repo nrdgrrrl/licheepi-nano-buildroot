@@ -1,0 +1,56 @@
+#!/bin/sh
+
+UART=/dev/ttyS2
+SLIP_UP=/usr/bin/slip-up
+PIDFILE=/run/slip-ttyS2.pid
+
+start_slip()
+{
+	# Give the ESP8266 time to leave reset and start its UART firmware.
+	sleep 2
+
+	attempt=1
+	while [ "$attempt" -le 3 ]; do
+		if "$SLIP_UP" "$UART"; then
+			echo "SLIP network ready on $UART"
+			return 0
+		fi
+		echo "SLIP startup attempt $attempt failed; retrying" >&2
+		attempt=$((attempt + 1))
+		sleep 1
+	done
+
+	echo "SLIP network unavailable; continuing boot" >&2
+	return 0
+}
+
+stop_slip()
+{
+	if [ -r "$PIDFILE" ]; then
+		pid=$(cat "$PIDFILE")
+		if [ -n "$pid" ]; then
+			kill "$pid" 2>/dev/null || true
+		fi
+		rm -f "$PIDFILE"
+	fi
+	ifconfig sl0 down 2>/dev/null || true
+}
+
+case "$1" in
+	start)
+		start_slip
+		;;
+	stop)
+		stop_slip
+		;;
+	restart)
+		stop_slip
+		start_slip
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}" >&2
+		exit 2
+		;;
+esac
+
+exit 0

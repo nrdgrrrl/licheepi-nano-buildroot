@@ -1,5 +1,5 @@
 #
-# Main Buildroot config file for LicheePi Nano
+# Main Buildroot config file for the Linux Business Card.
 #
 
 #
@@ -44,8 +44,8 @@ BR2_TOOLCHAIN_EXTERNAL_HAS_SSP=y
 #
 # OS name and login settings
 #
-BR2_TARGET_GENERIC_HOSTNAME="licheepi-nano"
-BR2_TARGET_GENERIC_ISSUE="Welcome to LicheePi Nano"
+BR2_TARGET_GENERIC_HOSTNAME="bizcard1"
+BR2_TARGET_GENERIC_ISSUE="Welcome to Linux Business Card"
 BR2_TARGET_GENERIC_ROOT_PASSWD="root"
 BR2_TARGET_GENERIC_GETTY_PORT="/dev/ttyS0"
 BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200=y
@@ -57,6 +57,9 @@ BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_LICHEEPI_NANO_PATH)/board/licheepi_nano/rootf
 BR2_PACKAGE_BUSYBOX_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_LICHEEPI_NANO_PATH)/board/licheepi_nano/busybox-slattach.config"
 BR2_PACKAGE_BUSYBOX_SHOW_OTHERS=y
 BR2_PACKAGE_I2C_TOOLS=y
+BR2_PACKAGE_EVTEST=y
+BR2_PACKAGE_LIBGPIOD=y
+BR2_PACKAGE_LIBGPIOD_TOOLS=y
 BR2_PACKAGE_LEDTEST=y
 
 #

@@ -6,9 +6,58 @@
 
 /dts-v1/;
 #include "suniv-f1c100s-licheepi-nano.dts"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
 
 / {
-	model = "Lichee Pi Nano (Custom)";
+	model = "Linux Business Card";
+
+	/*
+	 * PC1 (F1C physical pin 60) is the power-hold signal. The gpio-poweroff
+	 * driver requests logical inactive at probe; with ACTIVE_LOW this keeps
+	 * the physical line HIGH during normal runtime and drives it LOW on
+	 * final poweroff.
+	 */
+	poweroff {
+		compatible = "gpio-poweroff";
+		gpios = <&pio 2 1 GPIO_ACTIVE_LOW>; /* PC1 */
+	};
+
+	 gpio_keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		/* Configure the unclaimed ESP reset line as input at boot too. */
+		pinctrl-0 = <&esp_reset_pd15>;
+
+		button-1 {
+			label = "Button 1";
+			linux,code = <KEY_F1>;
+			gpios = <&pio 3 1 GPIO_ACTIVE_LOW>; /* PD1 */
+			debounce-interval = <20>;
+		};
+
+		button-2 {
+			label = "Button 2";
+			linux,code = <KEY_F2>;
+			gpios = <&pio 3 2 GPIO_ACTIVE_LOW>; /* PD2 */
+			debounce-interval = <20>;
+		};
+
+		button-3 {
+			label = "Button 3";
+			linux,code = <KEY_F3>;
+			gpios = <&pio 3 3 GPIO_ACTIVE_LOW>; /* PD3 */
+			debounce-interval = <20>;
+		};
+
+		button-4 {
+			label = "Button 4";
+			linux,code = <KEY_F4>;
+			gpios = <&pio 3 4 GPIO_ACTIVE_LOW>; /* PD4 */
+			debounce-interval = <20>;
+		};
+	};
+
 };
 
 &usb_otg {
@@ -21,16 +70,41 @@
 	status = "okay";
 };
 
+/*
+ * F1C100S uses the newer sun6i watchdog register layout. The inherited
+ * sun4i-compatible description never fires the watchdog, including for the
+ * reboot restart path; keep the standard sunxi_wdt driver and backport the
+ * upstream DT correction locally for this Linux 5.11 tree.
+ */
+&wdt {
+	compatible = "allwinner,suniv-f1c100s-wdt",
+		     "allwinner,sun6i-a31-wdt";
+	reg = <0x01c20ca0 0x20>;
+	interrupts = <16>;
+	clocks = <&osc32k>;
+};
+
+/* The handheld boots from SD and does not use the inherited W25Q128 SPI flash. */
+&spi0 {
+	status = "disabled";
+};
+
 &pio {
 	uart2_pd_pins: uart2-pd-pins {
 		pins = "PD13", "PD14";
 		function = "uart2";
 	};
 
-	/* PD13/PD14 are reserved for UART2 rather than LCD_D19/D20. */
+	esp_reset_pd15: esp-reset-pd15 {
+		pins = "PD15";
+		function = "gpio_in";
+		bias-disable;
+	};
+
+	/* PD1-4 are owned directly by gpio-keys; PD13/PD14 are reserved for UART2. */
 	lcd_rgb666_without_uart2_pins: lcd-rgb666-without-uart2-pins {
-		pins = "PD0", "PD1", "PD2", "PD3", "PD4", "PD5", "PD6",
-		       "PD7", "PD8", "PD9", "PD10", "PD11", "PD12", "PD15",
+		pins = "PD0", "PD5", "PD6", "PD7", "PD8", "PD9", "PD10",
+		       "PD11", "PD12",
 		       "PD16", "PD17", "PD18", "PD19", "PD20", "PD21";
 		function = "lcd";
 	};
@@ -47,7 +121,9 @@
 };
 
 &tcon0 {
-	pinctrl-0 = <&lcd_rgb666_without_uart2_pins>;
+	/* This handheld has no LCD; leave PD1-PD4 for the GPIO buttons. */
+	status = "disabled";
+	/delete-property/ pinctrl-0;
 };
 
 /*

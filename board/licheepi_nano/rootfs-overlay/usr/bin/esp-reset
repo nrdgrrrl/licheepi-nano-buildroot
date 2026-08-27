@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -eu
+
+GPIO_CHIP=/dev/gpiochip0
+GPIO_OFFSET=111 # PD15: bank 3 * 32 + pin 15
+
+if [ ! -c "$GPIO_CHIP" ]; then
+	echo "ESP reset GPIO chip is not available: $GPIO_CHIP" >&2
+	exit 1
+fi
+
+# Hold RESET low long enough for the ESP8266 to see a reset, then request the
+# line as an input.  The external 10 kOhm pull-up, not the SoC, releases RESET.
+# libgpiod 1.6.x parses --sec as an integer. Use its microsecond option for
+# the required 100 ms reset pulse.
+gpioset --mode=time --usec=100000 "$GPIO_CHIP" "${GPIO_OFFSET}=0"
+gpioget "$GPIO_CHIP" "$GPIO_OFFSET" >/dev/null
