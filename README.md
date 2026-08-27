@@ -12,7 +12,7 @@ All the custom configuration is packaged as a `BR2_EXTERNAL` Buildroot extension
 
 The build process uses [Docker](Dockerfile) for reproducibility and convenience. If you are an advanced Linux user you can set up your own build on your host machine by running the same commands as [Dockerfile.base].
 
-Explore the configuration and modify it at will: e.g. start with the main Buildroot defconfig file in [configs/licheepi_nano_defconfig](configs/licheepi_nano_defconfig). You will most likely need to update the Linux DTS (device tree) file to match your board usage, for which you can edit [suniv-f1c100s-licheepi-nano-custom.dts](board/licheepi_nano/suniv-f1c100s-licheepi-nano-custom.dts). Sample peripheral descriptions are listed in comments there - uncomment and modify what you need. This custom DTS file includes the original [suniv-f1c100s-licheepi-nano.dts](https://github.com/unframework/linux/blob/nano-5.11/arch/arm/boot/dts/suniv-f1c100s-licheepi-nano.dts) in the kernel tree, so you don't need to fork the kernel or duplicate code to make your local customizations. I may also set up an equivalent customizable U-Boot DTS file in the future.
+Explore the configuration and modify it at will: e.g. start with the main Buildroot defconfig file in [configs/licheepi_nano_defconfig](configs/licheepi_nano_defconfig). You will most likely need to update the Linux DTS (device tree) file to match your board usage, for which you can edit [suniv-f1c100s-licheepi-nano-custom.dts](board/licheepi_nano/suniv-f1c100s-licheepi-nano-custom.dts). Sample peripheral descriptions are listed in comments there - uncomment and modify what you need. This custom DTS file includes the upstream [suniv-f1c100s-licheepi-nano.dts](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/arch/arm/boot/dts/allwinner/suniv-f1c100s-licheepi-nano.dts?h=v6.18.47) in the Linux 6.18.47 tree, so you don't need to fork the kernel or duplicate code to make your local customizations. I may also set up an equivalent customizable U-Boot DTS file in the future.
 
 More customization is available by changing other files in the `board` and `configs` directories, such as the kernel boot command, kernel defconfig and SD image layout. There is also a preconfigured rootfs overlay folder, ready to populate.
 
@@ -49,9 +49,9 @@ The built image will be available in `dist/sdcard.img` - you can write this to y
 The separate development configuration is [configs/licheepi_nano_dev_defconfig](configs/licheepi_nano_dev_defconfig). It keeps the existing ARM926EJ-S/ARMv5 soft-float external glibc toolchain and grows the root filesystem to approximately 1 GiB. Build it with:
 
 ```sh
-docker build -f Dockerfile.dev --target devout --output type=local,dest=/tmp/licheepi-nano-dev-dist .
+docker build -f Dockerfile.dev --target devout --output type=local,dest=/tmp/linux-business-card-dev-dist .
 mkdir -p dist
-cp /tmp/licheepi-nano-dev-dist/sdcard-dev.img dist/sdcard-dev.img
+cp /tmp/linux-business-card-dev-dist/sdcard-dev.img dist/sdcard-dev.img
 ```
 
 The image includes the supported Buildroot target development utilities, including binutils, make, pkgconf, Git, curl, wget, archive/compression tools, patch, file, diffutils, findutils, and util-linux swap tools. Buildroot 2023.02 deliberately does not provide a native target GCC/G++ package: its external-toolchain GCC/G++ are host-side cross compilers, and Buildroot removes libc development headers from the target. A native `gcc`/`g++` image therefore requires moving this project to a distribution-oriented build (for example Debian, OpenEmbedded, or Yocto) or maintaining a separately built native toolchain package; this dev image does not silently make that ABI/toolchain change.
@@ -163,7 +163,7 @@ docker push unframework/licheepi-nano-buildroot:latest
 
 ## Linux and U-Boot Versions
 
-The built kernel is [a Linux fork based off 5.11](https://github.com/unframework/linux/commits/nano-5.11), with hardware-specific customizations. I have cherry-picked the original customizations from @Lichee-Pi Linux repo [nano-5.2-tf branch](https://github.com/torvalds/linux/compare/master...Lichee-Pi:nano-5.2-tf) and [nano-5.2-flash branch](https://github.com/torvalds/linux/compare/master...Lichee-Pi:nano-5.2-flash) (both based off Linux version 5.2) and added tiny fixes due to newer kernel version.
+The development candidate uses the upstream [Linux 6.18.47](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/?h=v6.18.47) tree. The board-specific custom DTS keeps the validated Linux Business Card wiring while reusing the upstream F1C100S definitions and drivers; the SH1106 OLED is intentionally left for a later issue.
 
 The built U-Boot is [a fork based off v2021.01](https://github.com/unframework/u-boot/commits/2021.01-f1c100s) with hardware-specific customizations, which I ported over from [the original @Lichee-Pi v2018.01 fork](https://github.com/Lichee-Pi/u-boot/commits/nano-v2018.01) referenced in the docs. By the way, the latter is actually itself a rebase of [an earlier repo branch maintained by @Icenowy](https://github.com/u-boot/u-boot/compare/master...Icenowy:f1c100s-spiflash). Splash screen support is not yet ported.
 

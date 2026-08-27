@@ -63,21 +63,11 @@ BR2_PACKAGE_LIBGPIOD_TOOLS=y
 BR2_PACKAGE_LEDTEST=y
 
 #
-# Linux kernel customized for the board
-# (using tarball download as it is much faster than Git)
-#
+# Upstream Linux kernel for the board
 BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_TARBALL=y
-# BR2_LINUX_KERNEL_CUSTOM_GIT=y
-
-# @unframework Linux fork and tag
-# (cherry-picked from Lichee-Pi Linux fork nano-5.2-flash branch as of 2021-03-06)
-BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="https://github.com/unframework/linux/archive/v5.11-nano-4/v5.11-nano-4.tar.gz"
-BR2_LINUX_KERNEL_VERSION="v5.11-nano-4"
-
-# original Lichee-Pi Linux fork and branch without Flash-specific config changes
-# BR2_LINUX_KERNEL_CUSTOM_REPO_URL="https://github.com/Lichee-Pi/linux"
-# BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="nano-5.2-tf"
+BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.18.47.tar.xz"
+BR2_LINUX_KERNEL_VERSION="6.18.47"
 
 BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG=y
 BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_LICHEEPI_NANO_PATH)/board/licheepi_nano/licheepi_nano_linux_defconfig"
@@ -88,7 +78,6 @@ BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_LICHEEPI_NANO_PATH)/board/li
 # custom DTS file with local overrides
 BR2_LINUX_KERNEL_DTS_SUPPORT=y
 BR2_LINUX_KERNEL_CUSTOM_DTS_PATH="$(BR2_EXTERNAL_LICHEEPI_NANO_PATH)/board/licheepi_nano/suniv-f1c100s-licheepi-nano-custom.dts"
-BR2_GLOBAL_PATCH_DIR="$(BR2_EXTERNAL_LICHEEPI_NANO_PATH)/board/licheepi_nano/patches"
 
 #
 # Build root FS ext2 (for TF card)
