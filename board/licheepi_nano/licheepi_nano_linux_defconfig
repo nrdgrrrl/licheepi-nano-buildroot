@@ -97,8 +97,9 @@ CONFIG_DRM_SSD130X=y
 CONFIG_DRM_SSD130X_I2C=y
 CONFIG_DRM_FBDEV_EMULATION=y
 CONFIG_FB_DEVICE=y
-# Keep UART0 and USB CDC as the primary consoles; provide /dev/fb0 without fbcon.
-# CONFIG_FRAMEBUFFER_CONSOLE is not set
+# Keep UART0 and USB CDC as the primary consoles; fbcon is enabled so the DRM
+# fbdev client performs the OLED's initial modeset.
+CONFIG_FRAMEBUFFER_CONSOLE=y
 
 CONFIG_SOUND=y
 CONFIG_SND=y
