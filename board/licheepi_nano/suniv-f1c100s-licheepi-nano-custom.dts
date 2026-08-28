@@ -108,6 +108,7 @@
 		solomon,width = <128>;
 		solomon,height = <64>;
 		solomon,col-offset = <2>;
+		solomon,segment-no-remap;
 	};
 };
 
