@@ -99,6 +99,17 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c0_pe_pins>;
 	status = "okay";
+
+	/* XFP1116-07A: the SH1106 exposes 132 RAM columns, but this module
+	 * exposes the centered 128 columns starting at controller column 2. */
+	oled@3c {
+		compatible = "sinowealth,sh1106";
+		reg = <0x3c>;
+		solomon,width = <128>;
+		solomon,height = <64>;
+		solomon,col-offset = <2>;
+		solomon,segment-no-remap;
+	};
 };
 
 &uart2 {
